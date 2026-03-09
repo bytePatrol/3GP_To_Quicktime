@@ -16,6 +16,7 @@ __pycache__/
 build/
 dist/
 
-# App bundle (distributed via releases, not source control)
+# App bundle & DMG (distributed via releases, not source control)
 *.app/
+*.dmg
 

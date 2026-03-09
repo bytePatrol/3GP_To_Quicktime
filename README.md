@@ -5,7 +5,8 @@
 <h1 align="center">3GP Converter</h1>
 
 <p align="center">
-  Batch-convert old <code>.3gp</code> and <code>.3g2</code> mobile videos to QuickTime-compatible MP4 — with smart upscaling and original timestamp preservation.
+  <strong>Batch-convert old <code>.3gp</code> and <code>.3g2</code> mobile videos to QuickTime-compatible MP4</strong><br>
+  Smart encoding &bull; Original timestamps preserved &bull; Zero quality loss when possible
 </p>
 
 <p align="center">
@@ -16,101 +17,113 @@
   <img src="https://img.shields.io/github/v/release/bytePatrol/3GP_To_Quicktime?style=flat-square&color=F59E0B" />
 </p>
 
+<br>
+
 <p align="center">
-  <img src="screenshots/main.png" width="720" alt="3GP Converter screenshot" />
+  <img src="screenshots/main.png" width="720" alt="3GP Converter — main window" />
 </p>
+
+---
+
+## Why?
+
+Millions of videos from the early smartphone era (2004–2012) were recorded in `.3gp` — a format that modern macOS, Photos, and most media apps can no longer open natively. **3GP Converter** brings those memories back to life in seconds, producing QuickTime-ready `.mp4` files that play everywhere.
 
 ---
 
 ## Features
 
-### Smart Conversion Strategy
-3GP Converter doesn't blindly re-encode everything. It inspects each file first and chooses the fastest, highest-quality path:
+### Intelligent Conversion Engine
 
-| Condition | Strategy |
-|-----------|----------|
-| Video height ≥ 480p | **Stream copy** — zero quality loss, near-instant |
-| Video height < 480p | **Re-encode + upscale** to 480p with H.264/AAC |
-| Stream copy fails | Automatic fallback to H.264 re-encode |
+Each file is analyzed individually. The converter picks the fastest, highest-quality path available:
+
+| Source Resolution | Strategy | Result |
+|:-|:-|:-|
+| **480p or higher** | Stream copy (`-c:v copy -c:a copy`) | Instant, bit-for-bit identical quality |
+| **Below 480p** | Re-encode with upscale (`libx264 -crf 22 -vf scale=-2:480`) | Clean 480p output with H.264 + AAC |
+| **Stream copy fails** | Automatic fallback to full re-encode | Always produces a working file |
 
 ### Timestamp Preservation
-Converted files inherit the **original creation and modification dates** from the source — critical for keeping old memories sorted correctly in Photos, Finder, and media managers.
 
-- `touch -r` preserves modification time
-- `SetFile -d` restores the macOS creation date (`st_birthtime`)
-- Container `creation_time` metadata is logged for reference
+Converted files keep the **exact original dates** — so your 2006 vacation videos still sort correctly in Photos, Finder, and any media library.
+
+- **Modification time** — carried over via `touch -r`
+- **macOS creation date** — restored with `SetFile -d` (preserves `st_birthtime`)
+- **Container metadata** — original `creation_time` is logged for reference
 
 ### Batch Processing
-Drop a folder — every `.3gp` and `.3g2` file inside is queued and processed automatically. Already-converted files are detected and skipped so re-running is always safe.
 
-### Real-Time Log
-A colour-coded terminal-style log updates live as each file is processed:
+Select a folder and every `.3gp` / `.3g2` file inside is queued automatically. Files that already have a matching `.mp4` are detected and skipped, so re-running is always safe. Originals are **never modified or deleted**.
+
+### Real-Time Dashboard
+
+Four live counters and a progress bar track the job as it runs:
+
+| Counter | Meaning |
+|:--------|:--------|
+| **Total** | Files discovered in the folder |
+| **Converted** | Successfully processed |
+| **Skipped** | Output `.mp4` already existed |
+| **Failed** | Errors during conversion |
+
+### Colour-Coded Log
+
+A terminal-style log scrolls in real time with colour-coded output:
 
 - **White** — file headers and progress markers
-- **Green** — successful conversions
+- **Green** — successful operations
 - **Amber** — skipped files and warnings
 - **Red** — errors and failures
 
-### Status Dashboard
-Four live counters update during the run:
+### Dark-Themed Native UI
 
-| Counter | Meaning |
-|---------|---------|
-| **Total** | Files found in the folder |
-| **Converted** | Successfully processed |
-| **Skipped** | Output already existed |
-| **Failed** | Errors during conversion |
-
-A progress bar and status pill (`Idle → Working… → Done`) give instant feedback on the overall job.
+Built with tkinter and styled with a modern dark zinc palette. Feels right at home on macOS — no Electron, no web views, no bloat.
 
 ---
 
 ## Requirements
 
 | Dependency | Install |
-|------------|---------|
-| macOS 12 Monterey or later | — |
-| [Homebrew](https://brew.sh) | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| ffmpeg | `brew install ffmpeg` |
-| Xcode Command Line Tools *(for SetFile)* | `xcode-select --install` |
+|:-----------|:--------|
+| **macOS 12 Monterey** or later | — |
+| [**Homebrew**](https://brew.sh) | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
+| **ffmpeg** | `brew install ffmpeg` |
+| **Xcode Command Line Tools** | `xcode-select --install` |
+
+> **Note:** Xcode CLT provides `SetFile`, which is used to restore macOS creation dates. The converter works without it, but timestamps won't be fully preserved.
 
 ---
 
 ## Installation
 
-### Option A — Download the app (recommended)
+### Option A — Download the App (Recommended)
 
-1. Go to [**Releases**](https://github.com/bytePatrol/3GP_To_Quicktime/releases)
-2. Download `3GP.Converter.dmg`
-3. Open the DMG and drag **3GP Converter** to `/Applications`
+1. Go to [**Releases**](https://github.com/bytePatrol/3GP_To_Quicktime/releases/latest)
+2. Download **`3GP.Converter.dmg`**
+3. Open the DMG and drag **3GP Converter** into your Applications folder
 4. Launch from Spotlight or Launchpad
 
-> **First launch:** macOS may show a Gatekeeper warning because the app is not notarised. Right-click → Open to bypass it.
+> **First launch:** macOS may show a Gatekeeper warning because the app is not notarised. Right-click the app → **Open** to bypass it.
 
-### Option B — Run from source
+### Option B — Run from Source
 
 ```bash
-# 1. Clone
 git clone https://github.com/bytePatrol/3GP_To_Quicktime.git
 cd 3GP_To_Quicktime
 
-# 2. Install dependencies
 brew install ffmpeg
-xcode-select --install   # provides SetFile
+xcode-select --install
 
-# 3. Run
 python3 convert_3gp.py
 ```
 
-### Option C — Build your own .app
+### Option C — Build Your Own .app
 
 ```bash
 pip3 install py2app
 python3 setup.py py2app
 open dist/
 ```
-
-The built app is in `dist/3GP Converter.app`.
 
 ---
 
@@ -121,8 +134,6 @@ The built app is in `dist/3GP Converter.app`.
 3. Click **Scan & Convert**
 4. Watch the live log and counters — converted `.mp4` files appear alongside the originals
 
-The original source files are never modified or deleted.
-
 ---
 
 ## How It Works
@@ -130,35 +141,33 @@ The original source files are never modified or deleted.
 ```
 For each .3gp / .3g2 file in the selected folder:
   │
-  ├─ [skip] .mp4 already exists → log "Skipped"
+  ├─ .mp4 already exists? → Skip
   │
   ├─ ffprobe: read video height
   │     │
-  │     ├─ height ≥ 480p
-  │     │     └─ ffmpeg stream copy (-c:v copy -c:a copy)
-  │     │           ├─ success → preserve timestamps, done
-  │     │           └─ failure → fall through to re-encode
+  │     ├─ ≥ 480p → stream copy (fast, lossless)
+  │     │     ├─ success → preserve timestamps ✓
+  │     │     └─ failure → fall through ↓
   │     │
-  │     └─ height < 480p (or unknown)
-  │           └─ ffmpeg re-encode (libx264 -crf 22 -vf scale=-2:480)
-  │                 └─ preserve timestamps
+  │     └─ < 480p or unknown → re-encode + upscale to 480p
+  │           └─ preserve timestamps ✓
   │
-  └─ Post: touch -r + SetFile -d to restore original dates
+  └─ Restore original dates (touch + SetFile)
 ```
 
 ---
 
 ## Configuration
 
-Constants at the top of `convert_3gp.py` can be edited to suit your setup:
+Constants at the top of [`convert_3gp.py`](convert_3gp.py) can be edited:
 
 ```python
-FFMPEG  = "/opt/homebrew/bin/ffmpeg"   # path to ffmpeg binary
-FFPROBE = "/opt/homebrew/bin/ffprobe"  # path to ffprobe binary
-SETFILE = "/usr/bin/SetFile"           # path to SetFile (Xcode CLT)
+FFMPEG  = "/opt/homebrew/bin/ffmpeg"   # Path to ffmpeg
+FFPROBE = "/opt/homebrew/bin/ffprobe"  # Path to ffprobe
+SETFILE = "/usr/bin/SetFile"           # Path to SetFile (Xcode CLT)
 
-COPY_TIMEOUT   = 300   # stream-copy timeout in seconds
-ENCODE_TIMEOUT = 600   # re-encode timeout in seconds
+COPY_TIMEOUT   = 300   # Stream-copy timeout (seconds)
+ENCODE_TIMEOUT = 600   # Re-encode timeout (seconds)
 ```
 
 ---
